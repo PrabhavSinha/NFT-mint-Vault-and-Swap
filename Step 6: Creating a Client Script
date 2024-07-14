@@ -1,0 +1,30 @@
+const anchor = require('@project-serum/anchor');
+const { SystemProgram } = anchor.web3;
+
+const main = async () => {
+    const provider = anchor.AnchorProvider.env();
+    anchor.setProvider(provider);
+
+    const program = anchor.workspace.NftMinting;
+
+    const mint = anchor.web3.Keypair.generate();
+    const tokenAccount = anchor.web3.Keypair.generate();
+
+    await program.rpc.mintNft({
+        accounts: {
+            mint: mint.publicKey,
+            tokenAccount: tokenAccount.publicKey,
+            user: provider.wallet.publicKey,
+            systemProgram: SystemProgram.programId,
+            tokenProgram: anchor.utils.token.TOKEN_PROGRAM_ID,
+            rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+        },
+        signers: [mint, tokenAccount],
+    });
+
+    console.log(`Minted NFT with mint address: ${mint.publicKey}`);
+};
+
+main().catch(err => {
+    console.error(err);
+});
